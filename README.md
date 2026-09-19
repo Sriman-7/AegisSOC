@@ -1,8 +1,15 @@
-# AegisSOC — Autonomous Cybersecurity & Incident Investigation Platform
+# 🛡️ AegisSOC — Autonomous Cybersecurity & Incident Investigation Platform
 
-**Track:** AI Powered Autonomous Cybersecurity & Incident Investigation (AI × Cybersecurity)  
-**Version:** v2.0.0 Enterprise Autonomous Defense Platform  
-**Repository:** [https://github.com/Sriman-7/Edumind](https://github.com/Sriman-7/Edumind)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-7.9-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Sriman-7/AegisSOC)
+
+> **Track:** AI Powered Autonomous Cybersecurity & Incident Investigation (AI × Cybersecurity)  
+> **Live Web Application:** [https://aegissoc.vercel.app/](https://aegissoc.vercel.app/)  
+> **GitHub Repository:** [https://github.com/Sriman-7/AegisSOC](https://github.com/Sriman-7/AegisSOC)
 
 ---
 
@@ -20,7 +27,7 @@ flowchart TD
 
     %% DETECTION
     subgraph ENGINE["2. Multi-Factor Statistical Detection Engine"]
-        STREAM --> MATH["Real-Time Anomaly Scorer (22ms)\nlib/cyber/engine.ts"]
+        STREAM --> MATH["Real-Time Anomaly Scorer (16ms)\nlib/cyber/engine.ts"]
         MATH --> Z["Z-Score Volumetric Analysis (35%)"]
         MATH --> H["Shannon Entropy Drift (20%)"]
         MATH --> S["Sequence Risk Markov Model (25%)"]
