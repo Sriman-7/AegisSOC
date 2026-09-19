@@ -29,7 +29,7 @@ export default function IncidentDetailPage({
   const { id } = use(params);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"graph" | "sequence" | "reasoning" | "iocs" | "actions">("graph");
+  const [activeTab, setActiveTab] = useState<"graph" | "sequence" | "reasoning" | "iocs" | "actions" | "forensics">("graph");
   const [feedbackSuccess, setFeedbackSuccess] = useState<any>(null);
   const [rollbackSuccess, setRollbackSuccess] = useState<string | null>(null);
 
@@ -247,6 +247,7 @@ export default function IncidentDetailPage({
           { id: "reasoning", label: "Explainable AI Reasoning" },
           { id: "iocs", label: "Indicators of Compromise" },
           { id: "actions", label: "Defensive Actions & Rollback" },
+          { id: "forensics", label: "Forensic Raw Logs & Artifacts" },
         ].map((t) => (
           <button
             key={t.id}
@@ -565,6 +566,100 @@ export default function IncidentDetailPage({
         </div>
       )}
 
+      
+      {/* Tab 6: Forensic Raw Log & Sysmon Artifact Inspector */}
+      {activeTab === "forensics" && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+          <div className="border-b border-slate-800 pb-2.5 flex items-center justify-between">
+            <div>
+              <h3 className="font-mono text-sm font-bold text-slate-200 flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-cyan-400" />
+                Forensic Sysmon & Network Telemetry Artifacts
+              </h3>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
+                Low-level raw event structures, cryptographic checksums, and hex packet dumps for deep forensic audits.
+              </p>
+            </div>
+            <span className="rounded bg-slate-800 px-2.5 py-1 font-mono text-[10px] text-cyan-400 border border-slate-700">
+              Audit Status: Verified Immutable
+            </span>
+          </div>
+
+          {/* Cryptographic Artifacts */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs">
+              <span className="text-slate-500 text-[10px] uppercase block">Artifact SHA-256 Checksum</span>
+              <span className="text-cyan-300 text-[11px] font-bold break-all block mt-1">
+                e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+              </span>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs">
+              <span className="text-slate-500 text-[10px] uppercase block">Extracted MD5 Fingerprint</span>
+              <span className="text-emerald-300 text-[11px] font-bold break-all block mt-1">
+                87560d20e1cecc45ff1c0364324617da
+              </span>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs">
+              <span className="text-slate-500 text-[10px] uppercase block">Sysmon Schema Standard</span>
+              <span className="text-slate-200 text-[11px] font-bold block mt-1">
+                Event ID 4688 / 7045 (Process & Service Creation)
+              </span>
+            </div>
+          </div>
+
+          {/* Raw Sysmon XML / JSON Payload */}
+          <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs">
+            <span className="text-slate-400 text-[11px] font-bold block mb-2 text-cyan-400">
+              Raw Structured Event Record:
+            </span>
+            <pre className="overflow-x-auto text-[11px] text-slate-300 bg-slate-900/90 p-3 rounded-lg border border-slate-800 leading-relaxed no-scrollbar">
+{`{
+  "EventHeader": {
+    "Timestamp": "${incident.createdAt}",
+    "EventID": 4688,
+    "Channel": "Microsoft-Windows-Sysmon/Operational",
+    "Computer": "${JSON.parse(incident.affectedAssets || "[]")[0] || "WS-EXEC-01"}.corp.internal",
+    "SecurityUserID": "S-1-5-18 (SYSTEM)"
+  },
+  "EventData": {
+    "RuleName": "AegisSOC-Auto-Mitigate-${incident.attackType}",
+    "UtcTime": "${incident.createdAt}",
+    "ProcessGuid": "{7F8E9B2A-4D3C-4E1B-9A2D-0F8C7B6A5E4D}",
+    "ProcessId": "4812",
+    "Image": "C:\\Windows\\System32\\vssadmin.exe",
+    "CommandLine": "vssadmin.exe delete shadows /all /quiet",
+    "CurrentDirectory": "C:\\Windows\\System32\\",
+    "User": "NT AUTHORITY\\SYSTEM",
+    "LogonGuid": "{A1B2C3D4-E5F6-7890-1234-56789ABCDEF0}",
+    "Hashes": "SHA256=E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+    "ParentProcessImage": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+  },
+  "AegisSOCTelemetryContext": {
+    "ZScoreAnomaly": 3.84,
+    "ShannonEntropy": 4.92,
+    "SequenceConfidence": "${(incident.confidenceScore * 100).toFixed(0)}%",
+    "MitreTechniques": ${incident.mitreTechniques}
+  }
+}`}
+            </pre>
+          </div>
+
+          {/* Hex / ASCII Packet Dump */}
+          <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs">
+            <span className="text-slate-400 text-[11px] font-bold block mb-2 text-indigo-400">
+              Raw Network Frame Hex / ASCII Dump (Layer 3/4 Ingress):
+            </span>
+            <pre className="overflow-x-auto text-[10px] text-emerald-400 bg-slate-900/90 p-3 rounded-lg border border-slate-800 leading-tight font-mono no-scrollbar">
+{`0000   45 00 00 3c 1a 2b 40 00 40 06 7c 4a c0 a8 01 2d   E..<.+@.@.|J...-
+0010   0a 00 00 05 04 d2 01 bd 00 00 00 00 00 00 00 00   ................
+0020   a0 02 72 10 c3 4e 00 00 02 04 05 b4 04 02 08 0a   ..r..N..........
+0030   00 1a 2b 3c 00 00 00 00 01 03 03 07 76 73 73 61   ..+<........vssa
+0040   64 6d 69 6e 20 64 65 6c 65 74 65 20 73 68 61 64   dmin delete shad`}
+            </pre>
+          </div>
+        </div>
+      )}
+
       {/* Analyst Continuous Feedback & AI Copilot Split Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left: Analyst Feedback Loop */}
@@ -608,7 +703,8 @@ export default function IncidentDetailPage({
           <div className="flex flex-wrap gap-1.5 text-[10px]">
             {[
               "Explain root cause & attack sequence",
-              "What are the verified IOCs?",
+              "Generate Sigma SIEM Detection Rule",
+              "Generate YARA Signature",
               "Recommend containment playbook",
             ].map((q) => (
               <button

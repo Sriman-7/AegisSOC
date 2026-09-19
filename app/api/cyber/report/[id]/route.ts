@@ -31,7 +31,7 @@ export async function GET(
       .map((id) => MITRE_KNOWLEDGE_BASE[id])
       .filter(Boolean);
 
-    const report: IncidentReport = {
+    const report: any = {
       incidentId: incident.id,
       title: incident.title,
       generatedAt: new Date().toISOString(),

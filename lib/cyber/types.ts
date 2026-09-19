@@ -1,14 +1,18 @@
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-export type IncidentStatus = "OPEN" | "INVESTIGATING" | "MITIGATED" | "RESOLVED";
-export type SourceType = "NETWORK" | "SYSTEM" | "AUTH" | "ALERT";
+export type IncidentStatus = "NEW" | "OPEN" | "INVESTIGATING" | "CONTAINED" | "RESOLVED" | "CLOSED" | "FALSE_POSITIVE";
+export type SourceType = "NETWORK" | "SYSTEM" | "AUTH" | "ALERT" | "DNS_QUERY" | "CLOUD_AUDIT";
 export type ActionType = 
   | "ISOLATE_HOST"
   | "BLOCK_IP"
   | "REVOKE_TOKEN"
+  | "REVOKE_CREDENTIALS"
   | "KILL_PROCESS"
   | "FIREWALL_DROP"
   | "RATE_LIMIT"
-  | "MFA_CHALLENGE";
+  | "MFA_CHALLENGE"
+  | "SUSPEND_BACKUP_JOBS"
+  | "ALERT_SECOPS"
+  | "QUARANTINE_FILE";
 
 export interface MitreTechnique {
   id: string;
@@ -66,28 +70,32 @@ export interface ExplainableAIReasoning {
   correlatedSignals: string[];
   confidenceFactors: { factor: string; scoreImpact: number }[];
   threatActorHypothesis: string;
-  recommendedImmediateAction: string;
+  mitreTechniques?: MitreTechnique[];
+  remediationGuidance: string[];
 }
 
 export interface IncidentReport {
-  incidentId: string;
+  id: string;
+  incidentId?: string;
+  blastRadiusPercentage?: number;
+  mitreCoverage?: any[];
+  executiveSummary?: string;
+  autonomousDefensesTriggered?: any[];
+  postIncidentRecommendations?: string[];
+  generatedAt?: string;
   title: string;
-  generatedAt: string;
-  executiveSummary: string;
   severity: Severity;
-  riskScore: number;
-  blastRadiusPercentage: number;
+  status: IncidentStatus;
   attackType: string;
-  mitreCoverage: MitreTechnique[];
+  confidence: number;
+  riskScore: number;
+  blastRadius: number;
+  affectedAssets: any[];
+  mitreTechniques: MitreTechnique[];
   attackSequence: AttackStep[];
-  affectedAssets: { hostname: string; ip: string; role: string; status: string }[];
   iocs: IOCItem[];
-  autonomousDefensesTriggered: {
-    action: ActionType;
-    target: string;
-    executedAt: string;
-    status: string;
-    isAutonomous: boolean;
-  }[];
-  postIncidentRecommendations: string[];
+  aiReasoning: ExplainableAIReasoning;
+  actionsTaken: any[];
+  createdAt: string;
+  resolvedAt?: string;
 }

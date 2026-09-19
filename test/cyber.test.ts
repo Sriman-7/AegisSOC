@@ -94,3 +94,60 @@ describe("Response Orchestrator & Rollback Ledger", () => {
     expect(payload.revertState.status).toBe("HEALTHY");
   });
 });
+
+
+import { TelemetryInputSchema, ActionExecuteSchema, FeedbackInputSchema } from "../lib/cyber/validation";
+import { checkRateLimit } from "../lib/cyber/rate-limiter";
+import { ACTIVE_SOAR_PLAYBOOKS } from "../lib/cyber/playbooks";
+
+describe("Security Hardening & Input Validation", () => {
+  it("validates compliant telemetry payloads with Zod", () => {
+    const valid = TelemetryInputSchema.safeParse({
+      sourceType: "NETWORK_FLOW",
+      sourceIp: "192.168.1.50",
+      destIp: "10.0.0.5",
+      port: 445,
+      action: "SMB_Session_Init",
+    });
+    expect(valid.success).toBe(true);
+  });
+
+  it("rejects invalid telemetry port numbers and missing actions", () => {
+    const invalidPort = TelemetryInputSchema.safeParse({
+      sourceType: "NETWORK_FLOW",
+      port: 999999, // out of range
+      action: "Test",
+    });
+    expect(invalidPort.success).toBe(false);
+
+    const missingAction = TelemetryInputSchema.safeParse({
+      sourceType: "NETWORK_FLOW",
+    });
+    expect(missingAction.success).toBe(false);
+  });
+
+  it("enforces sliding window rate limits", () => {
+    const testKey = "test-client-ip-" + Math.random();
+    // Allow up to 5 requests
+    for (let i = 0; i < 5; i++) {
+      const res = checkRateLimit(testKey, 5, 10000);
+      expect(res.allowed).toBe(true);
+    }
+    // 6th request should be blocked
+    const blocked = checkRateLimit(testKey, 5, 10000);
+    expect(blocked.allowed).toBe(false);
+    expect(blocked.remaining).toBe(0);
+  });
+});
+
+describe("SOAR Automation Playbooks Engine", () => {
+  it("verifies all registered playbooks have valid mitigation pipelines", () => {
+    expect(ACTIVE_SOAR_PLAYBOOKS.length).toBeGreaterThanOrEqual(4);
+    for (const pb of ACTIVE_SOAR_PLAYBOOKS) {
+      expect(pb.actions.length).toBeGreaterThanOrEqual(2);
+      expect(pb.severityTrigger.length).toBeGreaterThan(0);
+      expect(pb.mitreTriggers.length).toBeGreaterThan(0);
+      expect(pb.successRate).toBeGreaterThanOrEqual(95);
+    }
+  });
+});

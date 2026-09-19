@@ -8,37 +8,57 @@ datasource db {
 }
 
 model SecurityIncident {
-  id                    String            @id @default(cuid())
+  id                    String                   @id @default(cuid())
   title                 String
   description           String
-  severity              String            // CRITICAL, HIGH, MEDIUM, LOW
-  status                String            // OPEN, INVESTIGATING, MITIGATED, RESOLVED
-  attackType            String            // Ransomware, Credential Stuffing, APT Lateral Movement, DNS Exfiltration, etc.
-  attackPhase           String            // Initial Access, Execution, Lateral Movement, Exfiltration
-  confidence            Float             // 0.0 to 1.0
-  riskScore             Float             // 0 to 100
-  blastRadius           Float             // percentage 0 to 100
-  affectedAssets        String            // JSON string array of asset IDs or hostnames
-  attackSequence        String            // JSON string of attack steps
-  mitreTechniques       String            // JSON string array of MITRE codes (e.g. ["T1078", "T1059"])
-  iocs                  String            // JSON string of indicators of compromise
-  aiReasoning           String            // Natural language AI reasoning & evidence
-  recommendedActions    String            // JSON string array of suggested actions
-  isAutonomousMitigated Boolean           @default(false)
-  feedbackStatus        String?           // CONFIRMED_TRUE_POSITIVE, FALSE_POSITIVE, PENDING
-  scenarioKey           String?           // A, B, C, D, E, F
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  severity              String                   // CRITICAL, HIGH, MEDIUM, LOW
+  status                String                   // NEW, INVESTIGATING, CONTAINED, RESOLVED, CLOSED, FALSE_POSITIVE
+  attackType            String                   // Ransomware, Credential Stuffing, APT Lateral Movement, DNS Exfiltration, etc.
+  attackPhase           String                   @default("Initial Access") // Initial Access, Execution, Lateral Movement, Exfiltration, Impact
+  confidence            Float                    @default(0.85) // 0.0 to 1.0
+  riskScore             Float                    @default(75)   // 0 to 100
+  blastRadius           Float                    @default(50)   // percentage 0 to 100
+  priorityScore         Float                    @default(75)   // Composite priority ranking
+  factorBreakdown       String?                  // JSON of { severityScore, assetScore, blastScore, iocScore, formula }
+  affectedAssets        String                   // JSON string array of asset IDs or hostnames
+  attackSequence        String                   @default("[]") // JSON string of attack steps
+  mitreTechniques       String                   // JSON string array of MITRE codes (e.g. ["T1078", "T1059"])
+  iocs                  String                   @default("[]") // JSON string of indicators of compromise
+  aiReasoning           String                   @default("")   // Natural language AI reasoning & evidence
+  recommendedActions    String                   @default("[]") // JSON string array of suggested actions
+  assignee              String?                  // Security Analyst username / email
+  analystNotes          String?                  // Triage and investigation notes
+  resolutionSummary     String?                  // Formal resolution write-up
+  rootCause             String?                  // Verified root cause analysis
+  isAutonomousMitigated Boolean                  @default(false)
+  feedbackStatus        String?                  // CONFIRMED_TRUE_POSITIVE, FALSE_POSITIVE, PENDING
+  scenarioKey           String?                  // A, B, C, D, E, F
+  resolvedAt            DateTime?
+  closedAt              DateTime?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
 
   events                TelemetryEvent[]
   actions               DefenseAction[]
   feedbacks             AnalystFeedback[]
+  timelineEvents        IncidentTimelineEvent[]
+}
+
+model IncidentTimelineEvent {
+  id          String           @id @default(cuid())
+  incidentId  String
+  incident    SecurityIncident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  timestamp   DateTime         @default(now())
+  eventType   String           // DETECTION, AI_ANALYSIS, AUTONOMOUS_RESPONSE, MANUAL_ACTION, ROLLBACK, STATUS_CHANGE, NOTE_ADDED, FEEDBACK_SUBMITTED
+  actor       String           // SYSTEM, AI, ANALYST
+  description String
+  metadata    String?          // JSON metadata for the event
 }
 
 model TelemetryEvent {
   id                String            @id @default(cuid())
   timestamp         DateTime          @default(now())
-  sourceType        String            // NETWORK, SYSTEM, AUTH, ALERT
+  sourceType        String            // NETWORK, SYSTEM, AUTH, ALERT, DNS_QUERY, CLOUD_AUDIT
   sourceIp          String?
   destIp            String?
   port              Int?
@@ -58,7 +78,7 @@ model TelemetryEvent {
   intelMatch        Float             @default(0)
   contextMultiplier Float             @default(1.0)
   reasons           String?           // JSON string of structured reasons { feature, observed, baseline, contribution }
-  details           String?           // JSON string with extra details
+  details           String?           // JSON string with extra details (e.g. payload snippet, dns query)
   incidentId        String?
   incident          SecurityIncident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
 }
@@ -130,8 +150,8 @@ model SecuritySetting {
 }
 
 model EvaluationRun {
-  id             String   @id @default(cuid())
-  timestamp      DateTime @default(now())
+  id                 String   @id @default(cuid())
+  timestamp          DateTime @default(now())
   detectionLatencyMs Float
   responseLatencyMs  Float
   precisionBefore    Float
@@ -142,5 +162,5 @@ model EvaluationRun {
   recallAfter        Float
   f1After            Float
   fprAfter           Float
-  details            String   // JSON string of scenario outcomes
+  details            String   // JSON string of scenario outcomes, confusion matrix, ablation
 }

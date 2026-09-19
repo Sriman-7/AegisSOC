@@ -16,6 +16,9 @@ import {
   Sliders,
   Play,
   RotateCcw,
+  Globe,
+  Layers,
+  Upload,
 } from "lucide-react";
 
 export default function CyberLayout({ children }: { children: React.ReactNode }) {
@@ -54,9 +57,13 @@ export default function CyberLayout({ children }: { children: React.ReactNode })
     { href: "/cyber", label: "Command Center", icon: Activity },
     { href: "/cyber/incidents", label: "Incident Queue", icon: AlertTriangle },
     { href: "/cyber/responses", label: "Response Ledger", icon: Zap },
+    { href: "/cyber/war-room", label: "War Room", icon: ShieldAlert },
+    { href: "/cyber/playbooks", label: "SOAR Playbooks", icon: Layers },
+    { href: "/cyber/intel-feed", label: "Threat Intel", icon: Globe },
+    { href: "/cyber/replay", label: "Log Replay", icon: Upload },
     { href: "/cyber/investigation", label: "AI Copilot", icon: Bot },
     { href: "/cyber/intelligence", label: "Intelligence & Tuning", icon: BarChart3 },
-    { href: "/cyber/coverage", label: "Hackathon Coverage", icon: FileCheck2 },
+    { href: "/cyber/coverage", label: "Coverage Matrix", icon: FileCheck2 },
   ];
 
   // 7-step Guided Demo Player

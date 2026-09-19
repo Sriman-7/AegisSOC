@@ -34,6 +34,7 @@ export default function CyberCommandCenter() {
   const [loading, setLoading] = useState(true);
   const [simulatingKey, setSimulatingKey] = useState<string | null>(null);
   const [simFeedback, setSimFeedback] = useState<any>(null);
+  const [liveStreamActive, setLiveStreamActive] = useState<boolean>(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -81,6 +82,44 @@ export default function CyberCommandCenter() {
     }
   };
 
+
+  // Background live telemetry generator
+  useEffect(() => {
+    if (!liveStreamActive) return;
+
+    const sampleActions = [
+      { type: "NETWORK_FLOW", action: "TCP Ingress 443 -> Web Proxy", host: "GW-AUTH-EXTERNAL", ip: "192.168.1.105" },
+      { type: "AUTH_LOG", action: "Kerberos TGT Renewal", host: "DC-CORP-PRIMARY", user: "svc_backup" },
+      { type: "DNS_QUERY", action: "DNS Resolution: api.internal.corp", host: "WS-EXEC-01", dns: "api.internal.corp" },
+      { type: "PROCESS_EXEC", action: "Scheduled Defender Antivirus Scan", host: "SRV-APPS-02" },
+      { type: "FILE_INTEGRITY", action: "Log Rotation /var/log/syslog", host: "DB-PAYMENTS-01" },
+    ];
+
+    const streamInterval = setInterval(async () => {
+      const randomAction = sampleActions[Math.floor(Math.random() * sampleActions.length)];
+      try {
+        await fetch("/api/cyber/telemetry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourceType: randomAction.type,
+            action: randomAction.action,
+            hostname: randomAction.host,
+            sourceIp: randomAction.ip || "10.0.0.15",
+            username: randomAction.user || "system",
+            protocol: "TCP",
+            dnsQuery: randomAction.dns,
+          }),
+        });
+        await fetchDashboardData();
+      } catch (err) {
+        // Silently continue
+      }
+    }, 3500);
+
+    return () => clearInterval(streamInterval);
+  }, [liveStreamActive]);
+
   // Chart data formatting
   const chartData = [
     { time: "09:00", volume: 18, anomaly: 2 },
@@ -106,6 +145,17 @@ export default function CyberCommandCenter() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setLiveStreamActive(!liveStreamActive)}
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold transition ${
+              liveStreamActive
+                ? "bg-emerald-950/80 border-emerald-600 text-emerald-300 shadow-md shadow-emerald-500/20"
+                : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
+            }`}
+          >
+            <span className={`h-2 w-2 rounded-full ${liveStreamActive ? "bg-emerald-400 animate-ping" : "bg-slate-500"}`} />
+            {liveStreamActive ? "Live Stream: ACTIVE" : "Start Live Stream"}
+          </button>
           <button
             onClick={fetchDashboardData}
             className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 font-mono text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white"

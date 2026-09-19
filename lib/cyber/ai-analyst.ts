@@ -58,52 +58,53 @@ export function generateOfflineReasoning(
     ? "Matches advanced data exfiltration actors utilizing custom DNS tunneling stagers to bypass conventional egress inspection firewalls."
     : "Indicators align with automated credential stuffing botnets testing breached credential corpuses against corporate identity providers.";
 
-  const recommendedImmediateAction = attackType.includes("Ransomware")
-    ? "Immediately isolate affected host interfaces via host quarantine, kill suspicious parent processes, and verify offline backup integrity."
-    : attackType.includes("Credential")
-    ? "Revoke all active sessions for targeted users, enforce mandatory hardware token MFA, and drop ingress subnet at edge firewall."
-    : "Quarantine communicating endpoints, rotate Kerberos krbtgt account credentials, and inspect domain replication logs.";
-
   return {
     whyFlagged,
     observableEvidence,
     correlatedSignals,
     confidenceFactors,
     threatActorHypothesis,
-    recommendedImmediateAction,
+    mitreTechniques: mitreCodes.map((c) => MITRE_KNOWLEDGE_BASE[c]).filter(Boolean),
+    remediationGuidance: [
+      "Confirm host network containment in the Response Ledger to prevent further lateral pivot attempts.",
+      "Rotate compromised credentials, invalidate active Kerberos tickets, and enforce hardware MFA.",
+      "Submit feedback (True/False Positive) to tune detection weights for this asset classification.",
+    ],
   };
 }
 
 /**
- * AI-powered Threat Analysis Generator
- * Uses Gemini 2.5 Flash if available, with automatic deterministic fallback
+ * Generate comprehensive AI Threat Analysis with Gemini or fallback to offline expert model
  */
 export async function generateAIThreatAnalysis(
-  title: string,
-  attackType: string,
-  confidence: number,
-  affectedAssets: string[],
+  incident: any,
   mitreCodes: string[]
 ): Promise<ExplainableAIReasoning> {
   const genAI = getGenAI();
+  const affectedAssets = JSON.parse(incident.affectedAssets || "[]") as string[];
+  const title = incident.title || "Detected Cyber Anomaly";
+  const attackType = incident.attackType || "Malicious Intrusion";
+  const confidence = incident.confidenceScore || 0.85;
 
   if (genAI && process.env.GEMINI_API_KEY) {
     try {
-      const prompt = `You are a Principal SOC Cyber Investigator. Analyze this security incident:
+      const prompt = `You are AegisSOC Lead Forensic AI. Analyze this security incident:
 Title: ${title}
-Attack Type: ${attackType}
-Confidence: ${(confidence * 100).toFixed(0)}%
+Attack Classification: ${attackType}
+Confidence Score: ${(confidence * 100).toFixed(0)}%
+Severity: ${incident.severity}
 Affected Assets: ${affectedAssets.join(", ")}
-MITRE Codes: ${mitreCodes.join(", ")}
+Observed MITRE Techniques: ${mitreCodes.join(", ")}
+Telemetry Summary: ${incident.rootCauseAnalysis || "Correlated event cluster"}
 
-Respond with STRICT JSON matching this schema:
+Provide a structured JSON response conforming exactly to this format:
 {
-  "whyFlagged": ["3 concise bullet points"],
-  "observableEvidence": ["3 concrete forensic observations"],
-  "correlatedSignals": ["3 correlated signals"],
-  "confidenceFactors": [{"factor": "name", "scoreImpact": 0.25}],
-  "threatActorHypothesis": "2-3 sentence analysis of probable adversary and motive",
-  "recommendedImmediateAction": "Concise containment recommendation"
+  "whyFlagged": ["string", "string"],
+  "observableEvidence": ["string", "string"],
+  "correlatedSignals": ["string", "string"],
+  "threatActorHypothesis": "string",
+  "confidenceFactors": [{"factor": "string", "scoreImpact": 0.25}],
+  "remediationGuidance": ["string", "string"]
 }`;
 
       const response = await genAI.models.generateContent({
@@ -111,10 +112,13 @@ Respond with STRICT JSON matching this schema:
         contents: prompt,
       });
 
-      const text = response.text || "";
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]) as ExplainableAIReasoning;
+      if (response.text) {
+        const cleaned = response.text.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsed = JSON.parse(cleaned);
+        return {
+          ...parsed,
+          mitreTechniques: mitreCodes.map((c) => MITRE_KNOWLEDGE_BASE[c]).filter(Boolean),
+        };
       }
     } catch {
       // Fall through to deterministic expert engine
@@ -137,7 +141,8 @@ export async function queryInvestigationAssistant(
     affectedAssets?: string[];
     iocs?: IOCItem[];
     actions?: string[];
-  }
+  },
+  conversationHistory?: { role: string; content: string }[]
 ): Promise<string> {
   const genAI = getGenAI();
 
@@ -170,6 +175,14 @@ Provide actionable, concise forensic guidance. Format responses with clear headi
   const qLower = question.toLowerCase();
   const assetsStr = (context.affectedAssets || ["WS-EXEC-01", "DC-CORP-PRIMARY"]).join(", ");
   const attack = context.attackType || "Malicious Intrusion";
+
+  if (qLower.includes("sigma")) {
+    return "### Generated Sigma SIEM Detection Rule\n\n```yaml\ntitle: AegisSOC - Detect " + attack + " Activity\nid: " + Math.random().toString(36).substring(2, 10) + "\nstatus: experimental\ndescription: Detects suspicious process execution and telemetry patterns associated with " + attack + ".\nreferences:\n  - https://attack.mitre.org/techniques/T1486/\n  - https://attack.mitre.org/techniques/T1003/\nauthor: AegisSOC Autonomous Copilot\nlogsource:\n  category: process_creation\n  product: windows\ndetection:\n  selection:\n    Image|endswith:\n      - '\\vssadmin.exe'\n      - '\\powershell.exe'\n      - '\\cmd.exe'\n    CommandLine|contains:\n      - 'delete shadows'\n      - 'resize shadowstorage'\n  condition: selection\nlevel: critical\ntags:\n  - attack.impact\n  - attack.t1486\n```\n\n*Ready for direct deployment into Splunk, Elastic SIEM, or Microsoft Sentinel.*";
+  }
+
+  if (qLower.includes("yara")) {
+    return "### Generated YARA Detection Signature\n\n```yara\nrule AegisSOC_" + attack.replace(/[^a-zA-Z0-9]/g, '_') + "_Detection {\n    meta:\n        author = \"AegisSOC Automated Forensic Engine\"\n        description = \"Detects stager binaries and payloads associated with " + attack + "\"\n        threat_level = \"CRITICAL\"\n\n    strings:\n        $s1 = \"vssadmin.exe delete shadows /all /quiet\" ascii wide nocase\n        $s2 = \"powershell -ExecutionPolicy Bypass -NoProfile\" ascii wide nocase\n        $s3 = \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\" ascii\n\n    condition:\n        uint16(0) == 0x5A4D and (1 of ($s*))\n}\n```\n\n*Ready for deployment to endpoint EDR agents (CrowdStrike, Defender for Endpoint).*";
+  }
 
   if (qLower.includes("contain") || qLower.includes("mitigat") || qLower.includes("action") || qLower.includes("quarantine")) {
     return `### Recommended Containment Playbook for ${attack}

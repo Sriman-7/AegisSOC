@@ -1,75 +1,81 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { buildAttackGraph } from "@/lib/cyber/correlator";
+import { buildAttackGraph, calculateBlastRadius, MITRE_KNOWLEDGE_BASE } from "@/lib/cyber/correlator";
+import { generateAIThreatAnalysis } from "@/lib/cyber/ai-analyst";
+import { IncidentPatchSchema } from "@/lib/cyber/validation";
+import { checkRateLimit } from "@/lib/cyber/rate-limiter";
+import { findSimilarHistoricalIncidents } from "@/lib/cyber/historical-learning";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const rl = checkRateLimit(`get-incident-${ip}`, 120, 60000);
+    if (!rl.allowed) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+
     const { id } = await params;
+    if (!id) return NextResponse.json({ error: "Invalid incident ID" }, { status: 400 });
+
     const incident = await prisma.securityIncident.findUnique({
       where: { id },
       include: {
         events: { orderBy: { timestamp: "asc" } },
         actions: { orderBy: { executedAt: "desc" } },
         feedbacks: { orderBy: { createdAt: "desc" } },
+        timelineEvents: { orderBy: { timestamp: "asc" } },
       },
     });
 
-    if (!incident) {
-      return NextResponse.json({ error: "Incident not found" }, { status: 404 });
-    }
+    if (!incident) return NextResponse.json({ error: "Incident not found" }, { status: 404 });
 
     const affectedAssets = JSON.parse(incident.affectedAssets || "[]") as string[];
-    const isolatedActions = incident.actions.filter(
-      (a) => a.actionType === "ISOLATE_HOST" && a.status === "EXECUTED"
-    );
-    const isolatedAssets = isolatedActions.map((a) => a.target);
+    const mitreCodes = JSON.parse(incident.mitreTechniques || "[]") as string[];
+    const sourceIp = incident.events[0]?.sourceIp || "185.220.101.5";
 
-    // Build interactive topological attack graph
-    const attackGraph = buildAttackGraph(
-      incident.attackType,
-      affectedAssets,
-      "185.220.101.5",
-      isolatedAssets
-    );
+    const attackGraph = buildAttackGraph(incident.attackType, affectedAssets, sourceIp);
+    const blastRadius = calculateBlastRadius(affectedAssets.length, 12);
+    const mitreDetails = mitreCodes.map((c) => MITRE_KNOWLEDGE_BASE[c]).filter(Boolean);
+    const aiAnalysis = await generateAIThreatAnalysis(incident, mitreCodes);
+    const similarIncidents = await findSimilarHistoricalIncidents(incident.attackType, mitreCodes, incident.severity);
 
     return NextResponse.json({
       incident,
       attackGraph,
-      affectedAssets,
-      attackSequence: JSON.parse(incident.attackSequence || "[]"),
-      mitreTechniques: JSON.parse(incident.mitreTechniques || "[]"),
-      iocs: JSON.parse(incident.iocs || "[]"),
-      aiReasoning: JSON.parse(incident.aiReasoning || "{}"),
-      recommendedActions: JSON.parse(incident.recommendedActions || "[]"),
+      blastRadius,
+      mitreDetails,
+      aiAnalysis,
+      similarIncidents,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch incident details" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to load incident details" }, { status: 500 });
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const body = await req.json();
-    const { status, severity } = body;
+    const rawBody = await req.json();
+    const parseResult = IncidentPatchSchema.safeParse(rawBody);
 
-    const data: any = {};
-    if (status) data.status = status;
-    if (severity) data.severity = severity;
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid patch payload", details: parseResult.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const { status, notes } = parseResult.data;
 
     const updated = await prisma.securityIncident.update({
       where: { id },
-      data,
+      data: {
+        ...(status ? { status } : {}),
+        ...(notes ? { analystNotes: notes } : {}),
+        ...(status === "MITIGATED" || status === "RESOLVED" ? { resolvedAt: new Date() } : {}),
+      },
     });
 
     return NextResponse.json({ success: true, incident: updated });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to update incident" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update incident" }, { status: 500 });
   }
 }

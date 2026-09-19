@@ -1,0 +1,21 @@
+[
+  {
+    "sourceType": "SYSTEM",
+    "action": "vssadmin.exe delete shadows /all /quiet",
+    "hostname": "FS-STORAGE-04",
+    "sourceIp": "10.0.1.45"
+  },
+  {
+    "sourceType": "NETWORK",
+    "action": "DNS Query: dGVzdC1leGZpbC5kYXJrb3BzLmlv",
+    "hostname": "WS-EXEC-01",
+    "dnsQuery": "dGVzdC1leGZpbC5kYXJrb3BzLmlv"
+  },
+  {
+    "sourceType": "AUTH",
+    "action": "Multiple Failed Kerberos Pre-Auth (x45)",
+    "hostname": "DC-CORP-PRIMARY",
+    "sourceIp": "185.220.101.5",
+    "username": "Administrator"
+  }
+]

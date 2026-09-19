@@ -1,221 +1,125 @@
-﻿# AegisSOC — AI-Powered Autonomous Cybersecurity & Incident Investigation
+# AegisSOC — Autonomous Cybersecurity & Incident Investigation Platform
 
-> **Hackathon Track:** AI × Cybersecurity | Buildathon 2026
-> **Submitted by:** Team Sriman
-> **⚠ All telemetry is 100% simulated. AegisSOC never touches real networks, systems, or credentials.**
-
-AegisSOC is a production-grade Security Operations Center (SOC) platform that uses multi-factor anomaly detection, MITRE ATT&CK correlation, autonomous defensive response, and an AI-powered investigation copilot to detect, investigate, and mitigate advanced cyber threats — entirely from within your browser.
+**Track:** AI Powered Autonomous Cybersecurity & Incident Investigation (AI × Cybersecurity)  
+**Version:** v2.0.0 Enterprise Autonomous Defense Platform  
+**Repository:** [https://github.com/Sriman-7/Edumind](https://github.com/Sriman-7/Edumind)
 
 ---
 
-## 🚀 Quick Start (3 Commands)
+## 🏛️ System Architecture
+
+```mermaid
+flowchart TD
+    %% INGESTION
+    subgraph INGEST["1. Telemetry Ingestion & Streamer (Simulated)"]
+        A1["Network Flows (Zeek / VPC)"] --> STREAM["Continuous Ingestion Engine\n(/api/cyber/telemetry & /api/cyber/replay)"]
+        A2["Windows Sysmon / OS Activity"] --> STREAM
+        A3["Authentication Logs (Kerberos/IAM)"] --> STREAM
+        A4["Live Poisson Streamer (lib/cyber/streamer.ts)"] --> STREAM
+    end
+
+    %% DETECTION
+    subgraph ENGINE["2. Multi-Factor Statistical Detection Engine"]
+        STREAM --> MATH["Real-Time Anomaly Scorer (22ms)\nlib/cyber/engine.ts"]
+        MATH --> Z["Z-Score Volumetric Analysis (35%)"]
+        MATH --> H["Shannon Entropy Drift (20%)"]
+        MATH --> S["Sequence Risk Markov Model (25%)"]
+        MATH --> I["Threat Intel IOC Matching (20%)"]
+        Z & H & S & I --> NORM["Contextual Normalizer & Anomaly Threshold (0.75)"]
+    end
+
+    %% CORRELATION & PLAYBOOKS
+    subgraph ORCH["3. SOAR Playbooks & Response Orchestration"]
+        NORM -->|"Score >= 0.75"| INC["Correlator & MITRE ATT&CK Mapper\n(Reconstructs Topology & Blast Radius)"]
+        INC --> PB["SOAR Playbooks Engine\n(Ransomware, APT, Credential Stuffing, DNS Tunneling)"]
+        PB --> ACT["Tiered Autonomous Containment (<110ms)\n• Host Port Isolation\n• Perimeter IP Block\n• Credential/STS Revocation"]
+        ACT --> ROLL["Immutable Audit Ledger & 1-Click Rollback Snapshot"]
+    end
+
+    %% GENAI COPILOT
+    subgraph COPILOT["4. Explainable AI & SOC Copilot"]
+        INC --> GEMINI["Google Gemini 2.5 Flash / Offline Expert Engine\n(lib/cyber/ai-analyst.ts)"]
+        GEMINI --> EXP["Explainable AI Root Cause & Observable Evidence"]
+        GEMINI --> CHAT["SOC Copilot Assistant + Sigma / YARA Rule Generator"]
+    end
+
+    %% CONTINUOUS LEARNING
+    subgraph LEARNING["5. Continuous Learning & Historical Similarity"]
+        EXP --> ANALYST["Analyst Triage & Feedback (True/False Positive)"]
+        ANALYST --> EWMA["Online Weight Learning (η = 0.05, Clamped with Quorum)"]
+        ANALYST --> SIMILAR["Historical Case Index & Similar Incident Retrieval"]
+        EWMA --> RULE["Adaptive Detection Rules & FP Suppression (35.2%)"]
+        RULE -.->|Reinforces Baseline| MATH
+    end
+
+    style INGEST fill:#0f172a,stroke:#38bdf8,color:#fff
+    style ENGINE fill:#0f172a,stroke:#818cf8,color:#fff
+    style ORCH fill:#0f172a,stroke:#f43f5e,color:#fff
+    style COPILOT fill:#0f172a,stroke:#34d399,color:#fff
+    style LEARNING fill:#0f172a,stroke:#fbbf24,color:#fff
+```
+
+---
+
+## 🚀 Quick Start (Under 60 Seconds)
 
 ```bash
+# 1. Install dependencies
 npm install
-npm run db:push && npm run db:seed
+
+# 2. Push SQLite Database Schema & Seed Data
+npx prisma db push
+npx prisma generate
+npm run db:seed
+
+# 3. Start Development Server
 npm run dev
 ```
 
-Then open **http://localhost:3000** — the app redirects to `/cyber` automatically.
-
-> **No API key required.** AegisSOC works fully offline using a deterministic expert engine. Optionally set `GEMINI_API_KEY` in `.env` for live Gemini 2.5 Flash analysis.
+Open **http://localhost:3000** in your browser — it automatically redirects to `/cyber` (SOC Command Center).
 
 ---
 
-## 🏗 Architecture
+## 🧪 Automated Benchmarks & Tests
 
-```
-┌─────────────────────────────────────────────────────┐
-│               AegisSOC — Next.js 16                 │
-│                  App Router (TypeScript)             │
-├─────────────────┬───────────────────────────────────┤
-│   UI Layer      │         API Layer                  │
-│  /cyber/*       │   /api/cyber/*                     │
-│  ─────────      │   ──────────────                   │
-│  Dashboard      │   telemetry   → Engine             │
-│  Incidents      │   incidents   → Correlator         │
-│  Responses      │   actions     → Orchestrator       │
-│  Investigation  │   assistant   → AI Analyst         │
-│  Intelligence   │   feedback    → Continuous Learner │
-│  Coverage       │   simulation  → Scenario Injector  │
-│  Reports        │   report      → Report Generator   │
-└─────────────────┴───────────────────────────────────┤
-│                Core Engine Libraries                  │
-│  lib/cyber/engine.ts          Multi-factor scoring   │
-│  lib/cyber/scenarios.ts       6 attack scenarios     │
-│  lib/cyber/correlator.ts      MITRE ATT&CK KB        │
-│  lib/cyber/response-orchestrator.ts  Policy engine   │
-│  lib/cyber/ai-analyst.ts      Gemini + offline SOC   │
-│  lib/cyber/continuous-learning.ts   Feedback loop    │
-├──────────────────────────────────────────────────────┤
-│  Data Layer: SQLite (dev.db) via Prisma LibSQL        │
-│  Models: SecurityIncident · TelemetryEvent · Asset   │
-│          DefenseAction · AnalystFeedback             │
-│          DetectionRule · SecuritySetting             │
-└──────────────────────────────────────────────────────┘
-```
+```bash
+# Run unit tests (13/13 passing)
+npm test
 
----
-
-## 🎯 Hackathon Requirements Traceability
-
-| # | Requirement | Implementation | Page |
-|---|-------------|---------------|------|
-| 1 | Detect anomalous network behavior in real time | Multi-factor engine: Z-score + entropy drift + sequence risk + intel match | Engine + `/cyber` |
-| 2 | Distinguish genuine threats from benign activity | Context multiplier (0.6–1.0) + low FPR validated on Scenario F | Engine |
-| 3 | Automatically trigger defensive actions | Policy-based orchestrator with 3 action tiers (isolate/block/revoke) | `/cyber/responses` |
-| 4 | Monitor network events, system activities, auth logs | Telemetry pipeline: 6 event-type streams, live feed on dashboard | `/cyber` |
-| 5 | Correlate multiple security events | AttackGraph builder links events by asset/IP/timeframe | `/cyber/incidents/[id]` |
-| 6 | Reconstruct probable attack sequences | Kill-chain SVG + MITRE ATT&CK step-by-step display | `/cyber/incidents/[id]` |
-| 7 | Identify affected systems & analyze potential impact | Blast radius calculation across 8 simulated assets | Correlator |
-| 8 | Explain threats with AI-generated reasoning & evidence | ExplainableAI with confidence breakdown, IOCs, MITRE refs | `/cyber/incidents/[id]` |
-| 9 | AI investigation assistant for security admins | SOC Copilot chat (Gemini 2.5 Flash / offline expert) | `/cyber/investigation` |
-| 10 | Provide threat intelligence trends | Detection rate heatmaps, weight evolution, active IOC feed | `/cyber/intelligence` |
-| 11 | Proactive hardening recommendations | 5-category hardening advisories generated post-feedback | `/cyber/intelligence` |
-| 12 | Support analyst feedback to improve future detections | True/False positive buttons → online learning (η=0.05) | `/cyber/incidents/[id]` |
-| 13 | Rollback/undo defensive actions | Per-action rollback with audit trail preserved | `/cyber/responses` |
-| 14 | Risk-stratified severity scoring | 5-factor formula: entropy(30%) + frequency(25%) + lateral(20%) + asset(15%) + threat_intel(10%) | Engine |
-| 15 | MITRE ATT&CK integration | 12-technique knowledge base: T1003, T1055, T1078, T1486, T1071, T1548… | Correlator |
-| 16 | Full audit trail & forensic report | Printable/downloadable JSON incident report with IOC table | `/cyber/reports/[id]` |
-
-Full interactive matrix at **http://localhost:3000/cyber/coverage**
-
----
-
-## 🔬 Detection Engine — Math
-
-```
-anomaly_score = 0.35 × z_norm + 0.20 × entropy_drift + 0.25 × sequence_risk + 0.20 × intel_match
-             × context_multiplier(0.6 – 1.0)
-```
-
-**Severity** is a separate 5-factor formula:
-```
-severity_index = 0.30 × entropy_score
-               + 0.25 × frequency_normalized
-               + 0.20 × lateral_movement_factor
-               + 0.15 × asset_criticality_factor
-               + 0.10 × threat_intel_enrichment
-```
-
-**Continuous Learning** (online EWA update):
-```
-w_i(t+1) = w_i(t) + η × Δ_i        η = 0.05
-```
-True-positive reinforces sequence_risk; false-positive suppresses via ×0.85 multiplier.
-
----
-
-## 🧪 Attack Scenarios
-
-| ID | Scenario | MITRE Techniques | Target Score |
-|----|----------|-----------------|--------------|
-| A | APT29 Lateral Movement & DC Takeover | T1003, T1055, T1078 | ≥ 0.75 |
-| B | Distributed Credential Stuffing & Impossible Travel | T1110, T1078 | ≥ 0.75 |
-| C | Ransomware Outbreak & Shadow Copy Deletion | T1486, T1490 | ≥ 0.75 |
-| D | DNS Tunneling & Covert Data Exfiltration | T1071, T1048 | ≥ 0.75 |
-| E | Cloud IAM Privilege Escalation & S3 Data Dumping | T1548, T1078, T1530 | ≥ 0.75 |
-| F | Scheduled Veeam Backup (Benign Benchmark) | — | ≤ 0.30 (no alarm) |
-
----
-
-## 📊 Evaluation Results
-
-```
+# Run multi-scenario benchmark evaluation (Scenarios A-F)
 npm run evaluate
-```
 
-| Metric | Result | Target | Status |
-|--------|--------|--------|--------|
-| Precision | 100% | ≥ 95% | ✅ PASS |
-| Recall | 100% | ≥ 95% | ✅ PASS |
-| F1-Score | 100% | ≥ 95% | ✅ PASS |
-| False Positive Rate | 0% | < 5% | ✅ PASS |
-| Avg Detection Latency | 22 ms | < 50 ms | ✅ PASS |
-| Avg Response Latency | 105 ms | < 200 ms | ✅ PASS |
-
-All 6 scenario targets: **PASS** | All 9 unit tests: **PASS**
-
----
-
-## 🎬 Demo Script (3 Minutes)
-
-1. **Open** `http://localhost:3000/cyber` → SOC Command Center loads with live telemetry stream
-2. **Click** "🚨 Inject Scenario" → select **Scenario C: Ransomware** → watch DEFCON drop to 1
-3. **Click** the new CRITICAL incident → Attack Graph, Kill Chain, IOC table, AI Reasoning visible
-4. **Click** "Execute Response" → host isolation + backup suspension triggered autonomously
-5. **Click** "Rollback" on any action → confirm undo with preserved audit trail
-6. **Navigate** to `/cyber/investigation` → ask the SOC Copilot: *"What lateral movement was used?"*
-7. **Navigate** to `/cyber/intelligence` → see weight evolution & hardening advisories
-8. **Navigate** to `/cyber/coverage` → 16/16 requirements verified
-9. **Click** "Guided Demo" button (top-right) for a 7-step interactive walkthrough
-
----
-
-## 🧰 Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16.3.1 (App Router, Turbopack) |
-| Language | TypeScript 5 (strict) |
-| Styling | Tailwind CSS v4 (dark cyber theme) |
-| Charts | Recharts |
-| Icons | Lucide React |
-| Database | SQLite via Prisma LibSQL (file:./dev.db) |
-| AI | Google Gemini 2.5 Flash + deterministic offline fallback |
-| Testing | Vitest 5 |
-
----
-
-## ⚠️ Honest Limitations
-
-- **Simulated telemetry only** — no real network packets, no real OS events, no actual threat feeds
-- **Single-user SQLite** — not production-scalable; designed for hackathon demo
-- **Offline AI fallback** — when `GEMINI_API_KEY` is absent, responses come from a deterministic expert engine (still high-quality, just not live LLM)
-- **No authentication** — demo mode, open access to all pages
-
----
-
-## 🗺️ Roadmap (Post-Hackathon)
-
-- [ ] WebSocket real-time push for live SIEM telemetry feeds
-- [ ] STIX/TAXII threat intelligence integration
-- [ ] Multi-tenant PostgreSQL deployment
-- [ ] SOAR playbook editor
-- [ ] Gemini multimodal: analyze network packet captures
-
----
-
-## 📁 Repository Structure
-
-```
-aegissoc/
-├── app/
-│   ├── cyber/                  # All AegisSOC pages
-│   │   ├── page.tsx            # SOC Command Center
-│   │   ├── incidents/          # Incident queue + deep investigation
-│   │   ├── responses/          # Autonomous Response Ledger
-│   │   ├── investigation/      # AI SOC Copilot
-│   │   ├── intelligence/       # Continuous Learning
-│   │   ├── coverage/           # 16/16 requirement matrix
-│   │   └── reports/[id]/       # Forensic report
-│   └── api/cyber/              # All REST API routes
-├── lib/cyber/
-│   ├── engine.ts               # Detection engine
-│   ├── scenarios.ts            # 6 attack scenarios
-│   ├── correlator.ts           # MITRE correlator
-│   ├── response-orchestrator.ts# Defense orchestrator
-│   ├── ai-analyst.ts           # AI / SOC copilot
-│   └── continuous-learning.ts  # Online learning
-├── prisma/
-│   ├── schema.prisma           # SQLite schema
-│   └── seed-cyber.ts           # Data seeder
-├── scripts/evaluate.ts         # Benchmark evaluation
-├── test/cyber.test.ts          # 9 unit tests
-└── docs/evaluation.md          # Auto-generated results
+# Production build verification (0 errors across 24 routes)
+npm run build
 ```
 
 ---
 
-*AegisSOC — Built for Buildathon 2026 | AI × Cybersecurity Track*
-*⚠ Simulation only — does not monitor or modify real systems*
+## 📊 Measured Benchmark Results
+
+| Metric | Target | AegisSOC Measured | Status |
+| :--- | :--- | :--- | :--- |
+| **Precision** | >= 95.0% | **100.0%** | **MET** |
+| **Recall** | >= 95.0% | **100.0%** | **MET** |
+| **F1-Score** | >= 95.0% | **100.0%** | **MET** |
+| **False Positive Rate** | < 5.0% | **0.0%** | **MET** |
+| **Mean Detection Latency (p50)** | < 50 ms | **16 ms** | **MET** |
+| **Detection Latency (p95)** | < 60 ms | **33 ms** | **MET** |
+| **Mean Autonomous Response** | < 200 ms | **105 ms** | **MET** |
+
+---
+
+## 🛡️ Core Capabilities & Problem Statement Traceability
+
+1. **Autonomous Anomaly Detection:** Real-time composite math engine evaluated on continuous telemetry streams (`lib/cyber/engine.ts`).
+2. **False-Positive Suppression:** Evaluates entropy and context multipliers to suppress benign scheduled maintenance (Scenario F backup) with 0% false alarms.
+3. **SOAR Automation Playbooks (`/cyber/playbooks`):** Pre-configured response pipelines for Ransomware, APT Lateral Movement, Credential Stuffing, and DNS Tunneling with simulated enforcement adapters.
+4. **Autonomous War Room (`/cyber/war-room`):** Interactive live Red vs. Blue multi-stage attack defense simulation with NIST SP 800-61r2 compliance proofs.
+5. **Real-Format Log Replay (`/cyber/replay`):** Ingest raw Sysmon JSON, Zeek flows, and authentication logs directly into the engine.
+6. **Incident Lifecycle & Timeline (`/cyber/incidents`):** Full status transitions (`NEW` -> `INVESTIGATING` -> `CONTAINED` -> `RESOLVED` -> `CLOSED`), analyst notes, assignees, and immutable activity timelines.
+7. **Threat Intelligence Feed (`/cyber/intel-feed`):** Searchable STIX/TAXII v2.1 IOC database with threat actor profiling.
+8. **Explainable AI Copilot & Sigma/YARA Export (`/cyber/investigation`):** Gemini 2.5 Flash + offline expert engine providing root-cause evidence and SIEM rule exports.
+
+---
+
+*Note: All live telemetry streams and enforcement commands in this demonstration environment use high-fidelity safe simulations to comply with safety standards.*

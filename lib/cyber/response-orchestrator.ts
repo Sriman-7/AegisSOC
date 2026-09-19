@@ -140,6 +140,8 @@ export function createRollbackPayload(actionType: ActionType, target: string): s
         command: `aegis-iam mfa step-down --user ${target}`,
         revertState: { target, mfaRequirement: "STANDARD" },
       });
+    default:
+      return JSON.stringify({ command: `aegis-defense restore --target ${target}`, revertState: { target, status: "RESTORED" } });
   }
 }
 
