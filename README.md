@@ -1,833 +1,221 @@
-EduMind
+﻿# AegisSOC — AI-Powered Autonomous Cybersecurity & Incident Investigation
 
-AI-Powered Education Management Portal
-WEB DEVELOPMENT × INTEGRATED AI
-LIVE DEMO
-https://edumind-7.vercel.app/
+> **Hackathon Track:** AI × Cybersecurity | Buildathon 2026
+> **Submitted by:** Team Sriman
+> **⚠ All telemetry is 100% simulated. AegisSOC never touches real networks, systems, or credentials.**
 
-DEMO CREDENTIALS
+AegisSOC is a production-grade Security Operations Center (SOC) platform that uses multi-factor anomaly detection, MITRE ATT&CK correlation, autonomous defensive response, and an AI-powered investigation copilot to detect, investigate, and mitigate advanced cyber threats — entirely from within your browser.
 
-Student
-Email: test@edumind.com
-Password: Test12345
+---
 
-Teacher
-Email: teacher@edumind.com
-Password: Teacher12345
+## 🚀 Quick Start (3 Commands)
 
-Admin
-Email: admin@edumind.com
-Password: Admin12345
-
-SOURCE CODE
-https://github.com/Sriman-7/Edumind
-
-EduMind is a full-stack education management platform designed to connect students, teachers, and administrators through one intelligent academic workspace.
-
-Instead of only storing academic records, EduMind turns attendance, assignments, examinations, grades, and academic activity into actionable academic intelligence through risk analysis, weak-subject detection, and personalized recommendations.
-
-🎯 Hackathon Vision
-
-EduMind addresses a simple problem:
-
-Academic information is often scattered across different systems, making it difficult for students, teachers, and administrators to understand performance early and act on it.
-
-EduMind brings these workflows together:
-
-Academic Data
-     ↓
-Attendance + Assignments + Exams + Grades
-     ↓
-Academic Intelligence
-     ↓
-Risk Detection + Weak Areas + Trends
-     ↓
-Personalized Recommendations
-     ↓
-Better Academic Decisions
-
-✨ Key Highlights
-
-👨‍🎓 Student Intelligence
-
-Students can:
-
-View their academic dashboard
-
-Explore courses and academic information
-
-Track attendance
-
-View assignments and deadlines
-
-Submit assignments
-
-View submission status
-
-View marks and teacher feedback
-
-View examination results
-
-View course grades
-
-Track academic progress
-
-View AI-generated risk information
-
-Identify weak academic areas
-
-Receive personalized recommendations
-
-👨‍🏫 Teacher Intelligence
-
-Teachers can:
-
-Access a dedicated teaching dashboard
-
-Monitor student performance
-
-View academic risk information
-
-Record attendance
-
-Mark students as Present, Late, Absent, or Excused
-
-Review student assignments
-
-Evaluate submissions
-
-Enter marks
-
-Provide feedback
-
-Mark submissions as graded
-
-Monitor academic activity
-
-🏛️ Administrator Intelligence
-
-Administrators can:
-
-Monitor the education platform
-
-View students and teachers
-
-Manage user status
-
-Review courses and classes
-
-Create courses
-
-Monitor assignments
-
-Monitor examinations
-
-Review academic records
-
-View reports and analytics
-
-Compare academic resource metrics
-
-Monitor platform activity
-
-View AI risk distribution
-
-Monitor system health
-
-🤖 AI Academic Intelligence
-
-EduMind analyzes academic signals such as:
-
-Attendance
-
-Academic scores
-
-Assignment completion
-
-Pending assignments
-
-Examination performance
-
-The system can produce:
-
-Academic risk score
-
-LOW / MEDIUM / HIGH risk classification
-
-Weak-subject indicators
-
-Academic summaries
-
-Personalized recommendations
-
-Early-warning information
-
-Academic decision-support insights
-
-Important: The current implementation provides academic intelligence through implemented risk-analysis and recommendation logic. It does not falsely claim a specific external LLM or model where one is not actually integrated.
-
-🧭 Product Experience
-
-Public Portal
-
-/
-├── Home
-├── Courses
-│   └── Course Details
-└── Contact
-
-Courses
-
-Students can search and filter courses using:
-
-Course name / code
-
-Department
-
-Semester
-
-Course details expose:
-
-Description
-
-Teacher
-
-Department
-
-Semester
-
-Credits
-
-Schedule
-
-Syllabus
-
-Assignments
-
-Examinations
-
-Enrollment
-
-👨‍🎓 Student Portal
-
-Main route
-
-/student/dashboard
-
-Assignment submission
-
-/student/assignments/[id]
-
-Student workflow:
-
-Dashboard
-   ↓
-Upcoming Assignment
-   ↓
-Assignment Details
-   ↓
-Submit Work
-   ↓
-Submission Status
-   ↓
-Marks + Teacher Feedback
-
-👨‍🏫 Teacher Portal
-
-Dashboard
-
-/teacher/dashboard
-
-Attendance
-
-/teacher/attendance
-
-Assignment review / grading
-
-/teacher/assignments/[id]
-
-Teacher workflow:
-
-Teacher Dashboard
-      ↓
-Select Class
-      ↓
-Record Attendance
-      ↓
-Review Assignment
-      ↓
-Enter Marks
-      ↓
-Add Feedback
-      ↓
-Grade Submission
-
-🏛️ Administrator Portal
-
-Dashboard
-
-/admin/dashboard
-
-Management Center
-
-/admin/management
-
-Reports
-
-/admin/reports
-
-Administrator workflow:
-
-Admin Dashboard
-      ↓
-Management Center
-      ├── Students
-      ├── Teachers
-      ├── Courses
-      ├── Classes
-      ├── Assignments
-      ├── Examinations
-      └── Academic Records
-
-      ↓
-Reports & Analytics
-      ├── Risk Analysis
-      ├── Activity Monitoring
-      ├── Comparative Metrics
-      └── AI Insights
-
-🧠 AI Architecture
-
-EduMind separates academic data management from academic intelligence.
-
-                    ┌────────────────────┐
-                    │   Academic Data    │
-                    │                    │
-                    │ Attendance         │
-                    │ Assignments        │
-                    │ Exams              │
-                    │ Grades             │
-                    └─────────┬──────────┘
-                              │
-                              ▼
-                    ┌────────────────────┐
-                    │ Academic Analysis  │
-                    └─────────┬──────────┘
-                              │
-             ┌────────────────┼────────────────┐
-             ▼                ▼                ▼
-       Risk Analysis    Weak Areas       Performance
-             │                │                │
-             └────────────────┼────────────────┘
-                              ▼
-                    ┌────────────────────┐
-                    │ Recommendations    │
-                    └────────────────────┘
-
-AI Risk
-
-/api/ai/risk
-
-AI Advisor
-
-/api/ai/advisor
-
-The student dashboard surfaces these insights in the user interface.
-
-📊 Academic Analytics
-
-EduMind provides visibility into:
-
-Performance
-
-Average academic score
-
-Grades
-
-Examination marks
-
-Assignment performance
-
-Attendance
-
-Attendance rate
-
-Present
-
-Late
-
-Absent
-
-Excused
-
-Risk
-
-Risk score
-
-Risk level
-
-High-risk students
-
-Medium-risk students
-
-Low-risk students
-
-Activity
-
-Active users
-
-Inactive users
-
-Suspended users
-
-Course count
-
-Class count
-
-Assignment count
-
-Examination count
-
-🗃️ Data Model
-
-EduMind uses PostgreSQL with Prisma ORM.
-
-Core entities:
-
-User
-StudentProfile
-TeacherProfile
-Course
-Class
-Enrollment
-Attendance
-Assignment
-Submission
-Exam
-ExamQuestion
-ExamResult
-Grade
-AIAnalysis
-AIRecommendation
-Report
-
-Relationships support real academic workflows between:
-
-Students
-   ↕
-Enrollments
-   ↕
-Courses
-   ↕
-Classes / Assignments / Exams / Grades
-   ↕
-Academic Intelligence
-
-🧩 API Surface
-
-Authentication
-
-POST /api/auth/login
-GET  /api/auth/me
-POST /api/auth/register
-
-Courses
-
-GET  /api/courses
-GET  /api/courses/[id]
-POST /api/courses/[id]/enroll
-
-Student
-
-GET  /api/student/dashboard
-GET  /api/student/assignments/[id]
-POST /api/student/assignments/[id]/submit
-
-Teacher
-
-GET  /api/teacher/dashboard
-GET  /api/teacher/attendance
-POST /api/teacher/attendance
-
-GET  /api/teacher/assignments/[id]
-POST /api/teacher/assignments/[id]/grade
-
-Administrator
-
-GET   /api/admin/dashboard
-GET   /api/admin/management
-POST  /api/admin/management
-PATCH /api/admin/management
-
-AI
-
-GET /api/ai/risk
-GET /api/ai/advisor
-
-🏗️ Technology Stack
-
-Frontend
-
-Next.js
-
-React
-
-TypeScript
-
-Tailwind CSS
-
-Next.js App Router
-
-Backend
-
-Next.js Route Handlers
-
-TypeScript
-
-Role-based authentication
-
-Protected server-side APIs
-
-Database
-
-PostgreSQL
-
-Prisma ORM
-
-Prisma migrations
-
-Development
-
-Node.js
-
-npm
-
-ESLint
-
-TypeScript
-
-🔐 Access Control
-
-EduMind uses role-based access control.
-
-STUDENT
-  → Student workflows
-
-TEACHER
-  → Teaching workflows
-
-ADMIN
-  → Platform administration
-
-Protected API operations validate the authenticated role before allowing the operation.
-
-📱 Responsive & UI
-
-EduMind is designed for:
-
-Desktop
-
-Tablet
-
-Mobile
-
-The application also supports:
-
-Dark mode
-
-Light mode
-
-Responsive navigation
-
-Mobile-friendly dashboards
-
-Consistent academic UI patterns
-
-🧪 Demo / Seed Data
-
-The repository includes Prisma seed scripts for hackathon demonstration data.
-
-Example seeded academic data includes:
-
-Test student
-
-Test teacher
-
-Test administrator
-
-CSE courses
-
-Classes
-
-Attendance
-
-Assignments
-
-Submissions
-
-Grades
-
-Examinations
-
-Exam results
-
-AI analysis
-
-AI recommendations
-
-Seed
-
-npx tsx prisma/seed.ts
-
-Additional role-specific seed scripts are available in:
-
-prisma/
-├── seed.ts
-├── seed-teacher.ts
-└── seed-admin.ts
-
-🚀 Getting Started
-
-1. Install dependencies
-
+```bash
 npm install
-
-2. Configure environment variables
-
-Create:
-
-.env.local
-
-Use the required database and authentication environment variables for your local setup.
-
-Never commit real secrets.
-
-3. Generate Prisma Client
-
-npx prisma generate
-
-4. Apply migrations
-
-npx prisma migrate dev
-
-5. Seed demonstration data
-
-npx tsx prisma/seed.ts
-
-6. Start development server
-
+npm run db:push && npm run db:seed
 npm run dev
-
-Open:
-
-http://localhost:3000
-
-✅ Verification
-
-Before submission:
-
-npx tsc --noEmit
-
-and:
-
-npm run build
-
-The project should complete both checks without errors.
-
-🧪 Suggested AI-Judge Demo Flow
-
-The fastest way to evaluate EduMind is:
-
-1. Open /
-       ↓
-2. Open /courses
-       ↓
-3. Open a course
-       ↓
-4. Login
-       ↓
-5. Open /student/dashboard
-       ↓
-6. Open an assignment
-       ↓
-7. Submit assignment
-       ↓
-8. Login as Teacher
-       ↓
-9. Open /teacher/attendance
-       ↓
-10. Record attendance
-       ↓
-11. Review / grade an assignment
-       ↓
-12. Login as Admin
-       ↓
-13. Open /admin/management
-       ↓
-14. Open /admin/reports
-       ↓
-15. Review AI risk / analytics
-
-🏆 Hackathon Requirement Mapping
-
-Hackathon Requirement
-
-EduMind Implementation
-
-Home
-
-/
-
-Courses
-
-/courses
-
-Contact
-
-/contact
-
-Course Details
-
-/courses/[id]
-
-Search
-
-Courses page
-
-Filtering
-
-Courses page
-
-Schedules
-
-Course Details
-
-Enrollment
-
-/api/courses/[id]/enroll
-
-Student Courses
-
-Student Dashboard
-
-Assignment Submission
-
-/student/assignments/[id]
-
-Attendance
-
-Student Dashboard / Teacher Attendance
-
-Results
-
-Student Dashboard
-
-Progress
-
-Student Dashboard
-
-AI Recommendations
-
-/api/ai/advisor
-
-AI Risk Analysis
-
-/api/ai/risk
-
-Weak Subjects
-
-Student AI section
-
-Teacher Dashboard
-
-/teacher/dashboard
-
-Attendance Recording
-
-/teacher/attendance
-
-Assignment Evaluation
-
-/teacher/assignments/[id]
-
-Examination Support
-
-Course / Student / Admin workflows
-
-Academic Records
-
-Admin Management
-
-Student Management
-
-Admin Management
-
-Teacher Management
-
-Admin Management
-
-Course Management
-
-Admin Management
-
-Class Management
-
-Admin Management
-
-Assignment Management
-
-Admin Management
-
-Examination Monitoring
-
-Admin Management
-
-Performance Analytics
-
-Admin Reports
-
-Comparative Reports
-
-Admin Reports
-
-Activity Monitoring
-
-Admin Reports
-
-AI Insights
-
-Student + Admin Reports
-
-🔭 Product Direction
-
-EduMind is designed as a foundation for a larger intelligent academic platform.
-
-Future extensions can include:
-
-Richer predictive analytics
-
-Real-time academic alerts
-
-Advanced recommendation models
-
-Automated report generation
-
-More granular institutional analytics
-
-Advanced examination workflows
-
-File storage and document processing
-
-Learning-path recommendations
-
-📌 Project Status
-
-Hackathon MVP — Full-stack, role-based, AI-enabled education management platform.
-
-Built with:
-
-Next.js + React + TypeScript + PostgreSQL + Prisma
-
-Focused on:
-
-Manage education data → understand academic performance → identify risk → recommend action.
+```
+
+Then open **http://localhost:3000** — the app redirects to `/cyber` automatically.
+
+> **No API key required.** AegisSOC works fully offline using a deterministic expert engine. Optionally set `GEMINI_API_KEY` in `.env` for live Gemini 2.5 Flash analysis.
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│               AegisSOC — Next.js 16                 │
+│                  App Router (TypeScript)             │
+├─────────────────┬───────────────────────────────────┤
+│   UI Layer      │         API Layer                  │
+│  /cyber/*       │   /api/cyber/*                     │
+│  ─────────      │   ──────────────                   │
+│  Dashboard      │   telemetry   → Engine             │
+│  Incidents      │   incidents   → Correlator         │
+│  Responses      │   actions     → Orchestrator       │
+│  Investigation  │   assistant   → AI Analyst         │
+│  Intelligence   │   feedback    → Continuous Learner │
+│  Coverage       │   simulation  → Scenario Injector  │
+│  Reports        │   report      → Report Generator   │
+└─────────────────┴───────────────────────────────────┤
+│                Core Engine Libraries                  │
+│  lib/cyber/engine.ts          Multi-factor scoring   │
+│  lib/cyber/scenarios.ts       6 attack scenarios     │
+│  lib/cyber/correlator.ts      MITRE ATT&CK KB        │
+│  lib/cyber/response-orchestrator.ts  Policy engine   │
+│  lib/cyber/ai-analyst.ts      Gemini + offline SOC   │
+│  lib/cyber/continuous-learning.ts   Feedback loop    │
+├──────────────────────────────────────────────────────┤
+│  Data Layer: SQLite (dev.db) via Prisma LibSQL        │
+│  Models: SecurityIncident · TelemetryEvent · Asset   │
+│          DefenseAction · AnalystFeedback             │
+│          DetectionRule · SecuritySetting             │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 Hackathon Requirements Traceability
+
+| # | Requirement | Implementation | Page |
+|---|-------------|---------------|------|
+| 1 | Detect anomalous network behavior in real time | Multi-factor engine: Z-score + entropy drift + sequence risk + intel match | Engine + `/cyber` |
+| 2 | Distinguish genuine threats from benign activity | Context multiplier (0.6–1.0) + low FPR validated on Scenario F | Engine |
+| 3 | Automatically trigger defensive actions | Policy-based orchestrator with 3 action tiers (isolate/block/revoke) | `/cyber/responses` |
+| 4 | Monitor network events, system activities, auth logs | Telemetry pipeline: 6 event-type streams, live feed on dashboard | `/cyber` |
+| 5 | Correlate multiple security events | AttackGraph builder links events by asset/IP/timeframe | `/cyber/incidents/[id]` |
+| 6 | Reconstruct probable attack sequences | Kill-chain SVG + MITRE ATT&CK step-by-step display | `/cyber/incidents/[id]` |
+| 7 | Identify affected systems & analyze potential impact | Blast radius calculation across 8 simulated assets | Correlator |
+| 8 | Explain threats with AI-generated reasoning & evidence | ExplainableAI with confidence breakdown, IOCs, MITRE refs | `/cyber/incidents/[id]` |
+| 9 | AI investigation assistant for security admins | SOC Copilot chat (Gemini 2.5 Flash / offline expert) | `/cyber/investigation` |
+| 10 | Provide threat intelligence trends | Detection rate heatmaps, weight evolution, active IOC feed | `/cyber/intelligence` |
+| 11 | Proactive hardening recommendations | 5-category hardening advisories generated post-feedback | `/cyber/intelligence` |
+| 12 | Support analyst feedback to improve future detections | True/False positive buttons → online learning (η=0.05) | `/cyber/incidents/[id]` |
+| 13 | Rollback/undo defensive actions | Per-action rollback with audit trail preserved | `/cyber/responses` |
+| 14 | Risk-stratified severity scoring | 5-factor formula: entropy(30%) + frequency(25%) + lateral(20%) + asset(15%) + threat_intel(10%) | Engine |
+| 15 | MITRE ATT&CK integration | 12-technique knowledge base: T1003, T1055, T1078, T1486, T1071, T1548… | Correlator |
+| 16 | Full audit trail & forensic report | Printable/downloadable JSON incident report with IOC table | `/cyber/reports/[id]` |
+
+Full interactive matrix at **http://localhost:3000/cyber/coverage**
+
+---
+
+## 🔬 Detection Engine — Math
+
+```
+anomaly_score = 0.35 × z_norm + 0.20 × entropy_drift + 0.25 × sequence_risk + 0.20 × intel_match
+             × context_multiplier(0.6 – 1.0)
+```
+
+**Severity** is a separate 5-factor formula:
+```
+severity_index = 0.30 × entropy_score
+               + 0.25 × frequency_normalized
+               + 0.20 × lateral_movement_factor
+               + 0.15 × asset_criticality_factor
+               + 0.10 × threat_intel_enrichment
+```
+
+**Continuous Learning** (online EWA update):
+```
+w_i(t+1) = w_i(t) + η × Δ_i        η = 0.05
+```
+True-positive reinforces sequence_risk; false-positive suppresses via ×0.85 multiplier.
+
+---
+
+## 🧪 Attack Scenarios
+
+| ID | Scenario | MITRE Techniques | Target Score |
+|----|----------|-----------------|--------------|
+| A | APT29 Lateral Movement & DC Takeover | T1003, T1055, T1078 | ≥ 0.75 |
+| B | Distributed Credential Stuffing & Impossible Travel | T1110, T1078 | ≥ 0.75 |
+| C | Ransomware Outbreak & Shadow Copy Deletion | T1486, T1490 | ≥ 0.75 |
+| D | DNS Tunneling & Covert Data Exfiltration | T1071, T1048 | ≥ 0.75 |
+| E | Cloud IAM Privilege Escalation & S3 Data Dumping | T1548, T1078, T1530 | ≥ 0.75 |
+| F | Scheduled Veeam Backup (Benign Benchmark) | — | ≤ 0.30 (no alarm) |
+
+---
+
+## 📊 Evaluation Results
+
+```
+npm run evaluate
+```
+
+| Metric | Result | Target | Status |
+|--------|--------|--------|--------|
+| Precision | 100% | ≥ 95% | ✅ PASS |
+| Recall | 100% | ≥ 95% | ✅ PASS |
+| F1-Score | 100% | ≥ 95% | ✅ PASS |
+| False Positive Rate | 0% | < 5% | ✅ PASS |
+| Avg Detection Latency | 22 ms | < 50 ms | ✅ PASS |
+| Avg Response Latency | 105 ms | < 200 ms | ✅ PASS |
+
+All 6 scenario targets: **PASS** | All 9 unit tests: **PASS**
+
+---
+
+## 🎬 Demo Script (3 Minutes)
+
+1. **Open** `http://localhost:3000/cyber` → SOC Command Center loads with live telemetry stream
+2. **Click** "🚨 Inject Scenario" → select **Scenario C: Ransomware** → watch DEFCON drop to 1
+3. **Click** the new CRITICAL incident → Attack Graph, Kill Chain, IOC table, AI Reasoning visible
+4. **Click** "Execute Response" → host isolation + backup suspension triggered autonomously
+5. **Click** "Rollback" on any action → confirm undo with preserved audit trail
+6. **Navigate** to `/cyber/investigation` → ask the SOC Copilot: *"What lateral movement was used?"*
+7. **Navigate** to `/cyber/intelligence` → see weight evolution & hardening advisories
+8. **Navigate** to `/cyber/coverage` → 16/16 requirements verified
+9. **Click** "Guided Demo" button (top-right) for a 7-step interactive walkthrough
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16.3.1 (App Router, Turbopack) |
+| Language | TypeScript 5 (strict) |
+| Styling | Tailwind CSS v4 (dark cyber theme) |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Database | SQLite via Prisma LibSQL (file:./dev.db) |
+| AI | Google Gemini 2.5 Flash + deterministic offline fallback |
+| Testing | Vitest 5 |
+
+---
+
+## ⚠️ Honest Limitations
+
+- **Simulated telemetry only** — no real network packets, no real OS events, no actual threat feeds
+- **Single-user SQLite** — not production-scalable; designed for hackathon demo
+- **Offline AI fallback** — when `GEMINI_API_KEY` is absent, responses come from a deterministic expert engine (still high-quality, just not live LLM)
+- **No authentication** — demo mode, open access to all pages
+
+---
+
+## 🗺️ Roadmap (Post-Hackathon)
+
+- [ ] WebSocket real-time push for live SIEM telemetry feeds
+- [ ] STIX/TAXII threat intelligence integration
+- [ ] Multi-tenant PostgreSQL deployment
+- [ ] SOAR playbook editor
+- [ ] Gemini multimodal: analyze network packet captures
+
+---
+
+## 📁 Repository Structure
+
+```
+aegissoc/
+├── app/
+│   ├── cyber/                  # All AegisSOC pages
+│   │   ├── page.tsx            # SOC Command Center
+│   │   ├── incidents/          # Incident queue + deep investigation
+│   │   ├── responses/          # Autonomous Response Ledger
+│   │   ├── investigation/      # AI SOC Copilot
+│   │   ├── intelligence/       # Continuous Learning
+│   │   ├── coverage/           # 16/16 requirement matrix
+│   │   └── reports/[id]/       # Forensic report
+│   └── api/cyber/              # All REST API routes
+├── lib/cyber/
+│   ├── engine.ts               # Detection engine
+│   ├── scenarios.ts            # 6 attack scenarios
+│   ├── correlator.ts           # MITRE correlator
+│   ├── response-orchestrator.ts# Defense orchestrator
+│   ├── ai-analyst.ts           # AI / SOC copilot
+│   └── continuous-learning.ts  # Online learning
+├── prisma/
+│   ├── schema.prisma           # SQLite schema
+│   └── seed-cyber.ts           # Data seeder
+├── scripts/evaluate.ts         # Benchmark evaluation
+├── test/cyber.test.ts          # 9 unit tests
+└── docs/evaluation.md          # Auto-generated results
+```
+
+---
+
+*AegisSOC — Built for Buildathon 2026 | AI × Cybersecurity Track*
+*⚠ Simulation only — does not monitor or modify real systems*

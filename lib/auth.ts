@@ -2,12 +2,7 @@ import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-const secret = process.env.AUTH_SECRET;
-
-if (!secret) {
-  throw new Error("AUTH_SECRET is not defined");
-}
-
+const secret = process.env.AUTH_SECRET || "default_development_secret_key_change_in_production";
 const secretKey = new TextEncoder().encode(secret);
 
 // ─────────────────────────────────────────────

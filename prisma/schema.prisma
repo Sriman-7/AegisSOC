@@ -4,331 +4,143 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
-model User {
-  id                 String             @id @default(cuid())
-  name               String
-  email              String             @unique
-  passwordHash       String
-  role               UserRole
-  status             UserStatus         @default(ACTIVE)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  aiAnalyses         AIAnalysis[]
-  aiRecommendations  AIRecommendation[]
-  assignmentsCreated Assignment[]       @relation("AssignmentTeacher")
-  classesTaught      Class[]            @relation("ClassTeacher")
-  coursesTaught      Course[]           @relation("CourseTeacher")
-  examsCreated       Exam[]             @relation("ExamTeacher")
-  reports            Report[]
-  studentProfile     StudentProfile?
-  teacherProfile     TeacherProfile?
+model SecurityIncident {
+  id                    String            @id @default(cuid())
+  title                 String
+  description           String
+  severity              String            // CRITICAL, HIGH, MEDIUM, LOW
+  status                String            // OPEN, INVESTIGATING, MITIGATED, RESOLVED
+  attackType            String            // Ransomware, Credential Stuffing, APT Lateral Movement, DNS Exfiltration, etc.
+  attackPhase           String            // Initial Access, Execution, Lateral Movement, Exfiltration
+  confidence            Float             // 0.0 to 1.0
+  riskScore             Float             // 0 to 100
+  blastRadius           Float             // percentage 0 to 100
+  affectedAssets        String            // JSON string array of asset IDs or hostnames
+  attackSequence        String            // JSON string of attack steps
+  mitreTechniques       String            // JSON string array of MITRE codes (e.g. ["T1078", "T1059"])
+  iocs                  String            // JSON string of indicators of compromise
+  aiReasoning           String            // Natural language AI reasoning & evidence
+  recommendedActions    String            // JSON string array of suggested actions
+  isAutonomousMitigated Boolean           @default(false)
+  feedbackStatus        String?           // CONFIRMED_TRUE_POSITIVE, FALSE_POSITIVE, PENDING
+  scenarioKey           String?           // A, B, C, D, E, F
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  events                TelemetryEvent[]
+  actions               DefenseAction[]
+  feedbacks             AnalystFeedback[]
 }
 
-model StudentProfile {
-  id                String             @id @default(cuid())
-  userId            String             @unique
-  rollNumber        String             @unique
-  department        String?
-  semester          Int?
-  year              Int?
-  aiAnalyses        AIAnalysis[]
-  recommendations   AIRecommendation[]
-  attendanceRecords Attendance[]
-  enrollments       Enrollment[]
-  examResults       ExamResult[]
-  grades            Grade[]
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  submissions       Submission[]
+model TelemetryEvent {
+  id                String            @id @default(cuid())
+  timestamp         DateTime          @default(now())
+  sourceType        String            // NETWORK, SYSTEM, AUTH, ALERT
+  sourceIp          String?
+  destIp            String?
+  port              Int?
+  protocol          String?
+  username          String?
+  hostname          String?
+  processName       String?
+  action            String
+  status            String            // ALLOW, BLOCK, DROP, SUSPICIOUS, ANOMALOUS
+  anomalyScore      Float             @default(0)
+  confidence        Float             @default(0)
+  isAnomaly         Boolean           @default(false)
+  isBenign          Boolean           @default(false)
+  zNorm             Float             @default(0)
+  entropyDrift      Float             @default(0)
+  sequenceRisk      Float             @default(0)
+  intelMatch        Float             @default(0)
+  contextMultiplier Float             @default(1.0)
+  reasons           String?           // JSON string of structured reasons { feature, observed, baseline, contribution }
+  details           String?           // JSON string with extra details
+  incidentId        String?
+  incident          SecurityIncident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
 }
 
-model TeacherProfile {
-  id         String  @id @default(cuid())
-  userId     String  @unique
-  employeeId String  @unique
-  department String?
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Asset {
+  id          String    @id @default(cuid())
+  hostname    String    @unique
+  ipAddress   String
+  assetType   String    // SERVER, ENDPOINT, DATABASE, GATEWAY, CLOUD_VPC
+  role        String    // Domain Controller, Payment DB, etc.
+  criticality String    // CRITICAL, HIGH, MEDIUM, LOW (0.8 to 1.4 weight)
+  status      String    // HEALTHY, SUSPICIOUS, COMPROMISED, ISOLATED
+  riskScore   Float     @default(0)
+  lastActive  DateTime  @default(now())
+  isolatedAt  DateTime?
 }
 
-model Course {
-  id          String       @id @default(cuid())
-  code        String       @unique
-  name        String
-  description String?
-  credits     Int?
-  department  String?
-  semester    Int?
-  schedule    String?
-  syllabus    String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  teacherId   String?
-
-  assignments Assignment[]
-  classes     Class[]
-  teacher     User?        @relation("CourseTeacher", fields: [teacherId], references: [id])
-  enrollments Enrollment[]
-  exams       Exam[]
-  grades      Grade[]
+model DefenseAction {
+  id              String            @id @default(cuid())
+  actionType      String            // ISOLATE_HOST, BLOCK_IP, REVOKE_TOKEN, KILL_PROCESS, FIREWALL_DROP, RATE_LIMIT, MFA_CHALLENGE
+  target          String            // IP, Hostname, or User
+  incidentId      String?
+  incident        SecurityIncident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  status          String            // EXECUTED, REVERTED, PENDING_APPROVAL, FAILED
+  isAutonomous    Boolean           @default(true)
+  latencyMs       Int               @default(120)
+  reason          String
+  rollbackPayload String?           // JSON string of commands/state needed to reverse action
+  executedAt      DateTime          @default(now())
+  revertedAt      DateTime?
+  revertedBy      String?
 }
 
-model Class {
-  id         String       @id @default(cuid())
-  name       String
-  section    String?
-  room       String?
-  schedule   String?
-  createdAt  DateTime     @default(now())
-  courseId   String
-  teacherId  String?
-
-  attendance Attendance[]
-  course     Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  teacher    User?        @relation("ClassTeacher", fields: [teacherId], references: [id])
-
-  @@index([courseId])
-  @@index([teacherId])
+model AnalystFeedback {
+  id               String           @id @default(cuid())
+  incidentId       String
+  incident         SecurityIncident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  verdict          String           // TRUE_POSITIVE, FALSE_POSITIVE, BENIGN_EXCEPTION
+  analystNotes     String?
+  beforeConfidence Float            @default(0)
+  afterConfidence  Float            @default(0)
+  tuningAdjustment String?
+  createdAt        DateTime         @default(now())
 }
 
-model Enrollment {
-  id         String         @id @default(cuid())
-  studentId  String
-  courseId   String
-  semester   Int?
-  enrolledAt DateTime       @default(now())
-
-  course     Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, courseId])
-  @@index([courseId])
+model DetectionRule {
+  id                   String   @id @default(cuid())
+  name                 String
+  category             String   // NETWORK, AUTH, PROCESS, BEHAVIORAL
+  wZNorm               Float    @default(0.35)
+  wEntropy             Float    @default(0.20)
+  wSequence            Float    @default(0.25)
+  wIntel               Float    @default(0.20)
+  suppressionFactor    Float    @default(1.0)
+  whitelistEntities    String   @default("[]") // JSON string array of whitelisted IPs/processes
+  thresholdMedium      Float    @default(0.35)
+  thresholdHigh        Float    @default(0.55)
+  thresholdCritical    Float    @default(0.80)
+  updatedAt            DateTime @updatedAt
 }
 
-model Attendance {
-  id        String           @id @default(cuid())
-  studentId String
-  classId   String
-  date      DateTime
-  status    AttendanceStatus
-  remarks   String?
-
-  class     Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
-  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, classId, date])
-  @@index([studentId])
-  @@index([classId])
+model SecuritySetting {
+  id                     String   @id @default("global")
+  autonomousMode         Boolean  @default(true)
+  minConfidenceForAction Float    @default(0.75)
+  simulationRunning      Boolean  @default(false)
+  geminiApiKey           String?
+  updatedAt              DateTime @updatedAt
 }
 
-model Assignment {
-  id          String       @id @default(cuid())
-  title       String
-  description String?
-  dueDate     DateTime
-  maxMarks    Float        @default(100)
-  createdAt   DateTime     @default(now())
-  courseId    String
-  teacherId   String?
-
-  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  teacher     User?        @relation("AssignmentTeacher", fields: [teacherId], references: [id])
-  submissions Submission[]
-
-  @@index([courseId])
-}
-
-model Submission {
-  id           String           @id @default(cuid())
-  assignmentId String
-  studentId    String
-  submittedAt  DateTime?
-  fileUrl      String?
-  content      String?
-  marks        Float?
-  feedback     String?
-  status       SubmissionStatus @default(PENDING)
-
-  assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student      StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([assignmentId, studentId])
-  @@index([studentId])
-}
-
-model Exam {
-  id          String         @id @default(cuid())
-  title       String
-  description String?
-  examDate    DateTime
-  duration    Int?
-  totalMarks  Float
-  createdAt   DateTime       @default(now())
-  courseId    String
-  teacherId   String?
-
-  course      Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  teacher     User?          @relation("ExamTeacher", fields: [teacherId], references: [id])
-  questions   ExamQuestion[]
-  results     ExamResult[]
-
-  @@index([courseId])
-}
-
-model ExamQuestion {
-  id       String @id
-  examId   String
-  question String
-  marks    Float
-  order    Int
-
-  exam     Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
-
-  @@index([examId])
-}
-
-model ExamResult {
-  id        String         @id @default(cuid())
-  examId    String
-  studentId String
-  marks     Float
-  grade     String?
-  feedback  String?
-  createdAt DateTime       @default(now())
-
-  exam      Exam           @relation(fields: [examId], references: [id], onDelete: Cascade)
-  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([examId, studentId])
-  @@index([studentId])
-}
-
-model Grade {
-  id        String         @id @default(cuid())
-  studentId String
-  courseId  String
-  semester  Int?
-  score     Float
-  grade     String?
-  remarks   String?
-  createdAt DateTime       @default(now())
-
-  course    Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, courseId, semester])
-  @@index([studentId])
-}
-
-model AIAnalysis {
-  id              String          @id @default(cuid())
-  studentId       String?
-  type            AIAnalysisType
-  overallScore    Float?
-  attendanceRate  Float?
-  riskScore       Float?
-  weakSubjects    Json?
-  performanceData Json?
-  summary         String?
-  createdAt       DateTime       @default(now())
-  createdById     String?
-
-  createdBy       User?           @relation(fields: [createdById], references: [id])
-  student         StudentProfile? @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@index([studentId])
-  @@index([type])
-}
-
-model AIRecommendation {
-  id        String                 @id @default(cuid())
-  studentId String?
-  type      RecommendationType
-  priority  RecommendationPriority @default(MEDIUM)
-  title     String
-  message   String
-  action    String?
-  isRead    Boolean                @default(false)
-  createdAt DateTime               @default(now())
-  creatorId String?
-
-  creator   User?           @relation(fields: [creatorId], references: [id])
-  student   StudentProfile? @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@index([studentId])
-  @@index([priority])
-}
-
-model Report {
-  id            String     @id @default(cuid())
-  title         String
-  type          ReportType
-  description   String?
-  data          Json?
-  fileUrl       String?
-  createdAt     DateTime   @default(now())
-  generatedById String?
-
-  generatedBy   User?      @relation(fields: [generatedById], references: [id])
-
-  @@index([type])
-  @@index([generatedById])
-}
-
-enum UserRole {
-  STUDENT
-  TEACHER
-  ADMIN
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  LATE
-  EXCUSED
-}
-
-enum SubmissionStatus {
-  PENDING
-  SUBMITTED
-  LATE
-  GRADED
-}
-
-enum AIAnalysisType {
-  PERFORMANCE
-  RISK
-  WEAK_SUBJECT
-  ATTENDANCE
-  OVERALL
-}
-
-enum RecommendationType {
-  STUDY
-  ATTENDANCE
-  ASSIGNMENT
-  EXAM
-  SUBJECT
-  GENERAL
-}
-
-enum RecommendationPriority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-enum ReportType {
-  STUDENT_PERFORMANCE
-  CLASS_PERFORMANCE
-  ATTENDANCE
-  EXAM_ANALYSIS
-  AI_INSIGHTS
+model EvaluationRun {
+  id             String   @id @default(cuid())
+  timestamp      DateTime @default(now())
+  detectionLatencyMs Float
+  responseLatencyMs  Float
+  precisionBefore    Float
+  recallBefore       Float
+  f1Before           Float
+  fprBefore          Float
+  precisionAfter     Float
+  recallAfter        Float
+  f1After            Float
+  fprAfter           Float
+  details            String   // JSON string of scenario outcomes
 }
